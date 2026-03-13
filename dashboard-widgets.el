@@ -1023,29 +1023,27 @@ to widget creation."
 		  (when (and (dashboard-display-icons-p)
 					 dashboard-set-file-icons)
 			(let* ((path (get-text-property 0 'dashboard-path item))
-                   (icon (cond
-                          ((or (string-equal ,section-name
-                                             "Agenda for today:")
-                               (string-equal ,section-name
-                                             "Agenda for the coming week:"))
-                           dashboard-agenda-item-icon)
-                          ((and (stringp path)
-                                (not (file-remote-p path))
-                                (file-directory-p path))
-                           (dashboard-icon-for-dir
-                            path
-                            :height dashboard-icon-file-height
-                            :v-adjust dashboard-icon-file-v-adjust))
-                          ((and (stringp path)
-                                (file-remote-p path))
-                           dashboard-remote-path-icon)
-                          ((stringp path)
-                           (dashboard-icon-for-file
-                            (file-name-nondirectory path)
-                            :height dashboard-icon-file-height
-                            :v-adjust dashboard-icon-file-v-adjust))
-                          (t ""))))
-              (setq tag (concat icon " " item))))
+				   (icon (cond
+						  ((or (string-equal ,section-name "Agenda for today:")
+							   (string-equal ,section-name "Agenda for the coming
+  week:"))
+						   dashboard-agenda-item-icon)
+						  ((and (stringp path)
+								(file-remote-p path))
+						   dashboard-remote-path-icon)
+						  ((and (stringp path)
+								(file-directory-p path))
+						   (dashboard-icon-for-dir
+							path
+							:height dashboard-icon-file-height
+							:v-adjust dashboard-icon-file-v-adjust))
+						  ((stringp path)
+						   (dashboard-icon-for-file
+							(file-name-nondirectory path)
+							:height dashboard-icon-file-height
+							:v-adjust dashboard-icon-file-v-adjust))
+						  (t ""))))
+			  (setq tag (concat icon " " item))))
 
           (widget-create 'item
                          :tag tag
