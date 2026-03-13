@@ -1014,17 +1014,15 @@ Return a space if icon is not found."
 to widget creation."
   `(when (car ,list)
      (mapc
-      (lambda (el)
-        (let* ((item (progn ,@rest))
-               (tag item))
-          (insert "\n")
-          (insert (spaces-string (or standard-indent tab-width 4)))
+	  (lambda (el)
+		(let* ((tag ,@rest)
+               (item tag))
+		  (insert "\n")
+		  (insert (spaces-string (or standard-indent tab-width 4)))
 
-          (when (and (dashboard-display-icons-p)
-                     dashboard-set-file-icons)
-            (let* ((path (or (get-text-property 0 'dashboard-path item)
-							 (and (stringp item)
-                             (car (last (split-string item " - "))))))
+		  (when (and (dashboard-display-icons-p)
+					 dashboard-set-file-icons)
+			(let* ((path (get-text-property 0 'dashboard-path item))
                    (icon (cond
                           ((or (string-equal ,section-name
                                              "Agenda for today:")
