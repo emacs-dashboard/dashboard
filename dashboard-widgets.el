@@ -1259,6 +1259,26 @@ to widget creation."
 (defvar dashboard--recentf-cache-item-format nil
   "Cache to record the new generated align format.")
 
+(defun dashboard-recentf--propertize-item (el)
+  "Format EL from `dashboard-recentf-alist' and attach its real path."
+  (let* ((file (dashboard-expand-path-alist el dashboard-recentf-alist))
+         (filename (dashboard-f-filename file))
+         (path (dashboard-extract-key-path-alist el dashboard-recentf-alist))
+         (display
+          (cl-case dashboard-recentf-show-base
+            (`align
+             (unless dashboard--recentf-cache-item-format
+               (let* ((len-align (dashboard--align-length-by-type 'recents))
+                      (new-fmt (dashboard--generate-align-format
+                                dashboard-recentf-item-format len-align)))
+                 (setq dashboard--recentf-cache-item-format new-fmt)))
+             (format dashboard--recentf-cache-item-format filename path))
+            (`nil path)
+            (t (format dashboard-recentf-item-format filename path)))))
+    (if file
+        (propertize display 'dashboard-path file)
+      display)))
+
 (defun dashboard-insert-recents (list-size)
   "Add the list of LIST-SIZE items from recently edited files."
   (setq dashboard--recentf-cache-item-format nil)
@@ -1275,24 +1295,7 @@ to widget creation."
    `(lambda (&rest _)
       (find-file-existing
        (dashboard-expand-path-alist ,el dashboard-recentf-alist)))
-   (let* ((file (dashboard-expand-path-alist el dashboard-recentf-alist))
-          (filename (dashboard-f-filename file))
-          (path (dashboard-extract-key-path-alist el dashboard-recentf-alist)))
-     (let ((display
-            (cl-case dashboard-recentf-show-base
-              (`align
-               (unless dashboard--recentf-cache-item-format
-                 (let* ((len-align (dashboard--align-length-by-type
-                                    'recents))
-                        (new-fmt (dashboard--generate-align-format
-                                  dashboard-recentf-item-format len-align)))
-                   (setq dashboard--recentf-cache-item-format new-fmt)))
-               (format dashboard--recentf-cache-item-format filename path))
-              (`nil path)
-              (t (format dashboard-recentf-item-format filename path)))))
-       (if file
-           (propertize display 'dashboard-path file)
-         display)))))
+   (dashboard-recentf--propertize-item el)))
 
 ;;
 ;;; Bookmarks
