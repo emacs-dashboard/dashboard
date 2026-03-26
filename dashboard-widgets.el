@@ -27,6 +27,7 @@
 (declare-function all-the-icons-icon-for-file "ext:all-the-icons.el")
 (declare-function all-the-icons-fileicon "ext:data-fileicons.el")
 (declare-function all-the-icons-octicon "ext:data-octicons.el")
+(declare-function ansi-color-apply-on-region "ext:ansi-color.el")
 (declare-function nerd-icons-icon-for-dir "ext:nerd-icons.el")
 (declare-function nerd-icons-icon-for-file "ext:nerd-icons.el")
 (declare-function nerd-icons-sucicon "ext:nerd-icons.el")
@@ -1010,40 +1011,39 @@ Return a space if icon is not found."
 ;;; Section list
 
 (defmacro dashboard-insert-section-list (section-name list action &rest rest)
-  "Insert into SECTION-NAME a LIST of items, expanding ACTION and passing REST
-to widget creation."
+  "Insert into SECTION-NAME a LIST of items, expanding ACTION.
+REST is for widget creation."
   `(when (car ,list)
      (mapc
-	  (lambda (el)
-		(let* ((tag ,@rest)
+      (lambda (el)
+        (let* ((tag ,@rest)
                (item tag))
-		  (insert "\n")
-		  (insert (spaces-string (or standard-indent tab-width 4)))
+          (insert "\n")
+          (insert (spaces-string (or standard-indent tab-width 4)))
 
-		  (when (and (dashboard-display-icons-p)
-					 dashboard-set-file-icons)
-			(let* ((path (get-text-property 0 'dashboard-path item))
-				   (icon (cond
-						  ((or (string-equal ,section-name "Agenda for today:")
-							   (string-equal ,section-name "Agenda for the coming
-  week:"))
-						   dashboard-agenda-item-icon)
-						  ((and (stringp path)
-								(file-remote-p path))
-						   dashboard-remote-path-icon)
-						  ((and (stringp path)
-								(file-directory-p path))
-						   (dashboard-icon-for-dir
-							path
-							:height dashboard-icon-file-height
-							:v-adjust dashboard-icon-file-v-adjust))
-						  ((stringp path)
-						   (dashboard-icon-for-file
-							(file-name-nondirectory path)
-							:height dashboard-icon-file-height
-							:v-adjust dashboard-icon-file-v-adjust))
-						  (t ""))))
-			  (setq tag (concat icon " " item))))
+          (when (and (dashboard-display-icons-p)
+                     dashboard-set-file-icons)
+            (let* ((path (get-text-property 0 'dashboard-path item))
+                   (icon (cond
+                          ((or (string-equal ,section-name "Agenda for today:")
+                               (string-equal ,section-name "Agenda for the coming week:"))
+                           dashboard-agenda-item-icon)
+                          ((and (stringp path)
+                                (file-remote-p path))
+                           dashboard-remote-path-icon)
+                          ((and (stringp path)
+                                (file-directory-p path))
+                           (dashboard-icon-for-dir
+                            path
+                            :height dashboard-icon-file-height
+                            :v-adjust dashboard-icon-file-v-adjust))
+                          ((stringp path)
+                           (dashboard-icon-for-file
+                            (file-name-nondirectory path)
+                            :height dashboard-icon-file-height
+                            :v-adjust dashboard-icon-file-v-adjust))
+                          (t ""))))
+              (setq tag (concat icon " " item))))
 
           (widget-create 'item
                          :tag tag

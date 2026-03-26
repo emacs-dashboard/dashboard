@@ -263,7 +263,7 @@ To show agenda for the upcoming seven days set the variable ~dashboard-week-agen
   (setq dashboard-week-agenda t)
 #+END_SRC
 
-By default org-agenda entries are filter by time, only showing those
+By default, org-agenda entries are filtered by time, only showing those
 task with ~DEADLINE~, ~SCHEDULE-TIME~ or ~TIMESTAMP~ . To show all agenda entries
 (except ~DONE~)
 
@@ -308,7 +308,7 @@ respect [[https://orgmode.org/worg/doc.html#org-agenda-todo-keyword-format][org-
 
 To customize the tags format there is a variable
 ~dashboard-agenda-tags-format~. This variable could be any function that
-receives the tags directly from ~org-get-tags~. By default
+receives the tags directly from ~org-get-tags~. By default,
 ~dashboard-agenda-tags-format~ is set to ~identity~. To hide the
 tags set the variable to ~ignore~: ~(setq dashboard-agenda-tags-format 'ignore)~
 or to ~nil~.
