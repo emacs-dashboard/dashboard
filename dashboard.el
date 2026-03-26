@@ -50,39 +50,35 @@
   "Extensible startup screen."
   :group 'applications)
 
-;; Custom splash screen
-(defvar dashboard-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-p") #'dashboard-previous-line)
-    (define-key map (kbd "C-n") #'dashboard-next-line)
-    (define-key map (kbd "<up>") #'dashboard-previous-line)
-    (define-key map (kbd "<down>") #'dashboard-next-line)
-    (define-key map (kbd "k") #'dashboard-previous-line)
-    (define-key map (kbd "j") #'dashboard-next-line)
-    (define-key map [tab] #'widget-forward)
-    (define-key map (kbd "C-i") #'widget-forward)
-    (define-key map [backtab] #'widget-backward)
-    (define-key map (kbd "RET") #'dashboard-return)
-    (define-key map (kbd "<touchscreen-begin>") #'widget-button-click)
-    (define-key map [mouse-1] #'dashboard-mouse-1)
-    (define-key map (kbd "}") #'dashboard-next-section)
-    (define-key map (kbd "{") #'dashboard-previous-section)
+(defvar-keymap dashboard-mode-map
+  :doc "Keymap for dashboard mode."
+  "C-p" #'dashboard-previous-line
+  "C-n" #'dashboard-next-line
+  "<up>" #'dashboard-previous-line
+  "<down>" #'dashboard-next-line
+  "k" #'dashboard-previous-line
+  "j" #'dashboard-next-line
+  "<tab>" #'widget-forward
+  "C-i" #'widget-forward
+  "<backtab>" #'widget-backward
+  "RET" #'dashboard-return
+  "<touchscreen-begin>" #'widget-button-click
+  "<mouse-1>" #'dashboard-mouse-1
+   "}" #'dashboard-next-section
+   "{" #'dashboard-previous-section
+   "<backspace>" #'dashboard-remove-item-under
+   "<delete>" #'dashboard-remove-item-under
+   "DEL" #'dashboard-remove-item-under
 
-    (define-key map (kbd "<backspace>") #'dashboard-remove-item-under)
-    (define-key map (kbd "<delete>") #'dashboard-remove-item-under)
-    (define-key map (kbd "DEL") #'dashboard-remove-item-under)
-
-    (define-key map (kbd "1") #'dashboard-section-1)
-    (define-key map (kbd "2") #'dashboard-section-2)
-    (define-key map (kbd "3") #'dashboard-section-3)
-    (define-key map (kbd "4") #'dashboard-section-4)
-    (define-key map (kbd "5") #'dashboard-section-5)
-    (define-key map (kbd "6") #'dashboard-section-6)
-    (define-key map (kbd "7") #'dashboard-section-7)
-    (define-key map (kbd "8") #'dashboard-section-8)
-    (define-key map (kbd "9") #'dashboard-section-9)
-    map)
-  "Keymap for dashboard mode.")
+   "1" #'dashboard-section-1
+   "2" #'dashboard-section-2
+   "3" #'dashboard-section-3
+   "4" #'dashboard-section-4
+   "5" #'dashboard-section-5
+   "6" #'dashboard-section-6
+   "7" #'dashboard-section-7
+   "8" #'dashboard-section-8
+   "9" #'dashboard-section-9)
 
 (defcustom dashboard-before-initialize-hook nil
   "Hook that is run before dashboard buffer is initialized."
@@ -273,32 +269,46 @@ example:
 (defun dashboard-cycle-section-forward (&optional section)
   "Cycle forward through the entries in SECTION.
 If SECTION is nil, cycle in the current section."
-  (let ((target-section (or section (dashboard--current-section))))
-    (if target-section
-        (condition-case nil
-            (progn
-              (widget-forward 1)
-              (unless (eq target-section (dashboard--current-section))
-                (dashboard--goto-section target-section)))
-          (widget-forward 1))
-      (widget-forward 1))))
+  (if section
+      (lambda () (format "Cycle %s section forwards" section)
+        (interactive)
+        (widget-forward 1)
+        (unless (eq section (ignore-errors (dashboard--current-section)))
+          (dashboard--goto-section section)))
+    (lambda ()
+      (interactive) "Cycle current-section forwards"
+      (if (widget-at (point))
+          (let ((current-section (ignore-errors (dashboard--current-section))))
+            (widget-forward 1)
+            (unless (eq current-section (ignore-errors (dashboard--current-section)))
+              (dashboard--goto-section current-section)))
+        (widget-forward 1)))))
 
 (defun dashboard-cycle-section-backward (&optional section)
   "Cycle backward through the entries in SECTION.
 If SECTION is nil, cycle in the current section."
-  (let ((target-section (or section (dashboard--current-section))))
-    (if target-section
-        (condition-case nil
-            (progn
-              (widget-backward 1)
-              (unless (eq target-section (dashboard--current-section))
-                (progn
-                  (dashboard--goto-section target-section)
-                  (while (eq target-section (dashboard--current-section))
-                    (widget-forward 1))
-                  (widget-backward 1))))
-          (widget-backward 1))
-      (widget-backward 1))))
+  (if section
+      (lambda () (format "Cycle %s section backwards" section)
+        (interactive)
+        (widget-backward 1)
+        (unless (eq section (ignore-errors (dashboard--current-section)))
+          (dashboard--goto-section section)
+          (while (eq section (ignore-errors (dashboard--current-section)))
+            (widget-forward 1))
+          (widget-backward 1)))
+    (lambda () "Cycle current-section backwards"
+      (interactive)
+      (if (widget-at (point))
+          (let ((current-section (ignore-errors (dashboard--current-section))))
+            (widget-backward 1)
+            (unless (eq current-section (ignore-errors (dashboard--current-section)))
+              (dashboard--goto-section current-section)
+              (unless (eq section (ignore-errors (dashboard--current-section)))
+                (dashboard--goto-section section)
+                (while (eq section (ignore-errors (dashboard--current-section)))
+                  (widget-forward 1))
+                (widget-backward 1))))
+        (widget-backward 1)))))
 
 (defun dashboard-section-1 ()
   "Navigate to section 1." (interactive) (dashboard--goto-section-by-index 1))

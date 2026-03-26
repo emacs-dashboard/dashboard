@@ -85,8 +85,8 @@ Dashboard in frames created with =emacsclient -c= as follows:
   (setq initial-buffer-choice 'dashboard-open)
 #+END_SRC
 
-[[https://github.com/domtronn/all-the-icons.el][all-the-icons]] and 
-[[https://github.com/rainstormstudio/nerd-icons.el][nerd-icons]] may require 
+[[https://github.com/domtronn/all-the-icons.el][all-the-icons]] and
+[[https://github.com/rainstormstudio/nerd-icons.el][nerd-icons]] may require
 a refresh in order to be displayed correctly:
 
 #+BEGIN_SRC elisp
@@ -349,6 +349,14 @@ You can use any of the following shortcuts inside Dashboard
 | {                          | Previous section |
 | }                          | Next section     |
 |----------------------------+------------------|
+
+Section shortcuts (i.e. bookmarks, projects, agenda, registers) could be
+customized in the `dashboard-items-shortcut` variable. These shortcuts would
+cycle the section forward, and the uppercase of the shortcut would cycle the
+section backward. For example, the `m` key would go to the bookmarks section,
+and when pressed again, it would go to the next bookmark item and so on until it
+reached the end of the section, then would go back to the first bookmark
+item. And key `M` would do the same but backwards.
 
 * Wish List
 1. [X] Center content

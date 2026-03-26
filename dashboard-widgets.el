@@ -35,6 +35,8 @@
 (declare-function bookmark-get-filename "ext:bookmark.el")
 (declare-function bookmark-all-names "ext:bookmark.el")
 (declare-function calendar-date-compare "ext:calendar.el")
+(declare-function dashboard-cycle-section-forward "ext:dashboard.el")
+(declare-function dashboard-cycle-section-backward "ext:dashboard.el")
 (declare-function projectile-cleanup-known-projects "ext:projectile.el")
 (declare-function projectile-load-known-projects "ext:projectile.el")
 (declare-function projectile-mode "ext:projectile.el")
@@ -62,6 +64,7 @@
 (declare-function org-time-string-to-time "ext:org.el")
 (declare-function org-today "ext:org.el")
 (declare-function recentf-cleanup "ext:recentf.el")
+(defvar dashboard-mode-map)
 (defvar org-level-faces)
 (defvar org-agenda-new-buffers)
 (defvar org-agenda-prefix-format)
@@ -664,9 +667,7 @@ Set to nil for unbounded."
                                      search-label
                                      &optional no-next-line)
   "Insert a shortcut SHORTCUT-CHAR for a given SEARCH-LABEL.
-
 SHORTCUT-ID is the section identifier.
-
 Optionally, provide NO-NEXT-LINE to move the cursor forward a line."
   (let* (;; Ensure punctuation and upper case in search string is not
          ;; used to construct the `defun'
@@ -674,17 +675,25 @@ Optionally, provide NO-NEXT-LINE to move the cursor forward a line."
          ;; remove symbol quote
          (sym (intern (replace-regexp-in-string "'" "" (format "dashboard-jump-to-%s" shortcut-id)))))
     `(progn
-       (eval-when-compile (defvar dashboard-mode-map))
        (defun ,sym nil
          ,(concat "Jump to " name ".
 This code is dynamically generated in `dashboard-insert-shortcut'.")
-         (interactive)
-         (unless (search-forward ,search-label (point-max) t)
-           (search-backward ,search-label (point-min) t))
-         ,@(unless no-next-line '((forward-line 1)))
-         (back-to-indentation))
+        (interactive)
+        (unless (search-forward ,search-label (point-max) t)
+          (search-backward ,search-label (point-min) t))
+        ,@(unless no-next-line '((forward-line 1)))
+        (back-to-indentation))
        (eval-after-load 'dashboard
-         (define-key dashboard-mode-map ,shortcut-char ',sym)))))
+         (dashboard--define-shorcut-key-binding ,shortcut-id ,shortcut-char)))))
+
+(defun dashboard--define-shorcut-key-binding (section keybinding)
+  "Set `cycle-section's function for SECTION to KEYBINDING.
+in `dashboard-mode-map'."
+  (define-key dashboard-mode-map (kbd keybinding)
+              (dashboard-cycle-section-forward section))
+  (define-key dashboard-mode-map
+              (kbd (upcase keybinding))
+              (dashboard-cycle-section-backward section)))
 
 (defun dashboard-append (msg &optional _messagebuf)
   "Append MSG to dashboard buffer.
