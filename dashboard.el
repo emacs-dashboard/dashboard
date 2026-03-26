@@ -270,7 +270,7 @@ example:
   "Cycle forward through the entries in SECTION.
 If SECTION is nil, cycle in the current section."
   (if section
-      (lambda () (format "Cycle %s section forwards" section)
+      (lambda () "Cycle section forwards"
         (interactive)
         (widget-forward 1)
         (unless (eq section (ignore-errors (dashboard--current-section)))
@@ -288,7 +288,7 @@ If SECTION is nil, cycle in the current section."
   "Cycle backward through the entries in SECTION.
 If SECTION is nil, cycle in the current section."
   (if section
-      (lambda () (format "Cycle %s section backwards" section)
+      (lambda () "Cycle section backwards"
         (interactive)
         (widget-backward 1)
         (unless (eq section (ignore-errors (dashboard--current-section)))
