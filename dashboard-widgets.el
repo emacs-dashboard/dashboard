@@ -274,7 +274,7 @@ nerd-icons or (all-the-icons-faicon \"newspaper-o\") using all-the-icons."
   :group 'dashboard)
 
 (defcustom dashboard-banner-ascii "EMACS"
-  "String to be shown in place of the startup banner
+  "String to be shown in place of the startup banner.
 if `dashboard-startup-banner' is set to `ascii'."
   :type 'string
   :group 'dashboard)
@@ -631,7 +631,7 @@ Set to nil for unbounded."
 ;; TODO: Use function `string-pixel-width' after 29.1
 (defun dashboard-string-pixel-width (str)
   "Return the width of STR in pixels."
-  (if (fboundp #'string-pixel-width)
+  (if (fboundp 'string-pixel-width)
       (string-pixel-width str)
     (require 'shr)
     (shr-string-pixel-width str)))
@@ -1431,8 +1431,8 @@ Return function that returns a list of projects."
      (when dashboard-remove-missing-entry
        (dashboard-mute-apply
          (ignore-errors
-           (dashboard-funcall-fboundp #'project-forget-zombie-projects))))
-     (project-known-project-roots))
+           (dashboard-funcall-fboundp 'project-forget-zombie-projects))))
+     (dashboard-funcall-fboundp 'project-known-project-roots))
     (t
      (display-warning '(dashboard)
                       "Invalid value for `dashboard-projects-backend'"

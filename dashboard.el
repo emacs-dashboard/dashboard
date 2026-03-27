@@ -425,7 +425,7 @@ Optional argument ARGS adviced function arguments."
     (dashboard-mute-apply
       (cl-case dashboard-projects-backend
         (`projectile (projectile-remove-known-project path))
-        (`project-el (project-forget-projects-under path))))))
+        (`project-el (dashboard-funcall-fboundp 'project-forget-projects-under path))))))
 
 (defun dashboard-remove-item-bookmarks ()
   "Remove a bookmarks from `bookmark-alist'."
