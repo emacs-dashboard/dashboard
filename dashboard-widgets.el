@@ -18,6 +18,7 @@
 (require 'mule-util)
 (require 'rect)
 (require 'subr-x)
+(require 'ansi-color)
 
 ;;
 ;;; Externals
