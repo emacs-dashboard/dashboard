@@ -21,11 +21,11 @@
 ;;
 
 ;;; Code:
-
-(dashboard-setup-startup-hook)
-
-(setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
-
-(message "Done activation test.")
+(ert-deftest activate-dashboard-with-dashboard-open-test ()
+  (use-package dashboard
+    :load-path "./"
+    :demand t)
+  (with-current-buffer (dashboard-open)
+    (should (string-match-p "Welcome to Emacs!" (buffer-string)))))
 
 ;;; activate.el ends here
