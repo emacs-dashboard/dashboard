@@ -19,7 +19,10 @@ compile:
 
 test:
 	@echo "Testing..."
-	$(EASK) test ert ./test/*.el
+	$(EASK) test ert ./test/ert/*.el
+
+test-activate: package install
+	$(EASK) emacs --batch -l ./test/activate.el
 
 checkdoc:
 	@echo "Run checkdoc..."

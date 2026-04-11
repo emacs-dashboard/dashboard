@@ -431,7 +431,9 @@ Optional argument ARGS adviced function arguments."
   "Remove a file from `recentf-list'."
   (interactive)
   (let ((path (get-text-property (point) 'dashboard-path)))
-    (setq recentf-list (delete path recentf-list))
+    (when (boundp 'recentf-list)
+      ;; Compiler need that recentf-list is defined.
+      (setq recentf-list (delete path recentf-list)))
     (dashboard-funcall-fboundp 'recentf-save-list)))
 
 (defun dashboard-remove-item-projects ()
@@ -542,9 +544,11 @@ See `dashboard-item-generators' for all items available."
         (recentf-is-on (or (dashboard-funcall-fboundp 'recentf-enable-p)
                            (assq 'recents dashboard-items))))
     (when recentf-is-on
-      (unless (dashboard-funcall-fboundp 'recetnf-enable-p)
-        (require 'recentf) (recentf-load-list) (recentf-mode 1))
-      (when dashboard-remove-missing-entry (ignore-error (recentf-cleanup)))
+      (unless (dashboard-funcall-fboundp 'recentf-enable-p)
+        (unless (fboundp 'recentf-mode) (require 'recentf))
+        (recentf-mode 1)
+        (when dashboard-remove-missing-entry
+          (dashboard-funcall-fboundp 'recentf-cleanup)))
       (setq dashboard-recentf-list (symbol-value 'recentf-list)))
     (dashboard--with-buffer
       (when (or force-refresh (not (eq major-mode 'dashboard-mode)))
@@ -560,7 +564,9 @@ See `dashboard-item-generators' for all items available."
         (dashboard-vertically-center)
         (dashboard-mode)))
     (when recentf-is-on
-      (setq recentf-list dashboard-recentf-list)
+      (when (boundp 'recentf-list)
+        ;; Compiler need to esure recentf-list is defined.
+        (setq recentf-list dashboard-recentf-list))
       (setq dashboard-recentf-list nil))))
 
 (defun dashboard-vertically-center ()

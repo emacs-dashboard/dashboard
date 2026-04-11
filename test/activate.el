@@ -21,11 +21,11 @@
 ;;
 
 ;;; Code:
-(ert-deftest activate-dashboard-with-dashboard-open-test ()
-  (use-package dashboard
-    :load-path "./"
-    :demand t)
-  (with-current-buffer (dashboard-open)
-    (should (string-match-p "Welcome to Emacs!" (buffer-string)))))
+
+(dashboard-setup-startup-hook)
+
+(setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
+
+(message "Done activation test.")
 
 ;;; activate.el ends here

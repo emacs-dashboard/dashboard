@@ -64,8 +64,6 @@
 (declare-function org-release-buffers "ext:org.el")
 (declare-function org-time-string-to-time "ext:org.el")
 (declare-function org-today "ext:org.el")
-(declare-function recentf-load-list "ext:recentf.el")
-(declare-function recentf-cleanup "ext:recentf.el")
 (declare-function ansi-color-apply-on-region "ext:ansi-color")
 (defvar dashboard-mode-map)
 (defvar org-level-faces)
