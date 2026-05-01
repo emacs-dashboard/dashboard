@@ -8,7 +8,7 @@
 (defun dashboard-recentf--setup-tests ()
   "Setup recentf in dashboard buffer before running test-suite."
   (require 'dashboard)
-  (setopt dashboard-items '((recents . 5))))
+  (and (boundp 'dashboard-items) (setq dashboard-items '((recents . 5)))))
 
 (defun dashboard-recentf--build-recent-files-for-tests ()
   "Create recent file list."
@@ -54,8 +54,8 @@
   "Show the list fo recent files and the path to each file."
   (dashboard-recentf--build-recent-files-for-tests)
   (dashboard-recentf--setup-tests)
-  (setopt dashboard-recentf-show-base 'align)
-  (setopt dashboard-recentf-item-format "%s - %s")
+  (and (boundp 'dashboard-recentf-show-base ) (setq dashboard-recentf-show-base 'align))
+  (and (boundp 'dashboard-recentf-item-format) (setq dashboard-recentf-item-format "%s - %s"))
   (unwind-protect
       (with-current-buffer (and (fboundp 'dashboard-open)
                                 (funcall 'dashboard-open))
