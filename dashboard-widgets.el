@@ -64,7 +64,6 @@
 (declare-function org-release-buffers "ext:org.el")
 (declare-function org-time-string-to-time "ext:org.el")
 (declare-function org-today "ext:org.el")
-(declare-function recentf-cleanup "ext:recentf.el")
 (declare-function ansi-color-apply-on-region "ext:ansi-color")
 (defvar dashboard-mode-map)
 (defvar org-level-faces)
@@ -80,7 +79,6 @@
 
 (defvar truncate-string-ellipsis)
 (declare-function truncate-string-ellipsis "mule-util.el")  ; TODO: remove this after 28.1
-(defvar recentf-list nil)
 (defvar dashboard-buffer-name)
 
 ;;
@@ -1224,10 +1222,9 @@ REST is for widget creation."
         len-list base)
     (cl-case type
       (`recents
-       (require 'recentf)
-       (setq len-list (length recentf-list))
+       (setq len-list (length (symbol-value ' dashboard-recentf-alist)))
        (while (and (< count len-item) (< count len-list))
-         (setq base (nth count recentf-list)
+         (setq base (nth count (symbol-value 'dashboard-recentf-list))
                align-length (max align-length (dashboard-str-len (dashboard-f-filename base))))
          (cl-incf count)))
       (`bookmarks
@@ -1263,6 +1260,9 @@ REST is for widget creation."
   :type 'string
   :group 'dashboard)
 
+(defvar dashboard-recentf-list nil
+  "Copy of `recentf-list'.")
+
 (defvar dashboard-recentf-alist nil
   "Alist records shorten's recent files and it's full paths.")
 
@@ -1292,13 +1292,9 @@ REST is for widget creation."
 (defun dashboard-insert-recents (list-size)
   "Add the list of LIST-SIZE items from recently edited files."
   (setq dashboard--recentf-cache-item-format nil)
-  (dashboard-mute-apply
-    (recentf-mode 1)
-    (when dashboard-remove-missing-entry
-      (ignore-errors (recentf-cleanup))))
   (dashboard-insert-section
    "Recent Files:"
-   (dashboard-shorten-paths recentf-list 'dashboard-recentf-alist 'recents)
+   (dashboard-shorten-paths dashboard-recentf-list 'dashboard-recentf-alist 'recents)
    list-size
    'recents
    (dashboard-get-shortcut 'recents)

@@ -24,8 +24,6 @@
 ;;; Code:
 
 (require 'ffap)
-(require 'recentf)
-
 (require 'dashboard-widgets)
 
 ;;
@@ -39,7 +37,12 @@
 (declare-function page-break-lines-mode "ext:page-break-lines.el")
 (declare-function projectile-remove-known-project "ext:projectile.el")
 (declare-function project-forget-projects-under "ext:project.el")
-(declare-function linum-mode "linum.el")
+(declare-function linum-mode "ext:linum.el")
+(declare-function widget-at "ext:wid-edit.el")
+(declare-function widget-button-press "ext:wid-edit.el")
+(declare-function widget-button-click "ext:wid-edit.el")
+(declare-function widget-backward "ext:wid-edit.el")
+(declare-function widget-forward "ext:wid-edit.el")
 
 (declare-function dashboard-refresh-buffer "dashboard.el")
 
@@ -373,7 +376,7 @@ Optional prefix ARG says how many lines to move; default is one line."
 (defun dashboard--section-list (section)
   "Return the list from SECTION."
   (cl-case section
-    (`recents        recentf-list)
+    (`recents        (symbol-value 'dashboard-recentf-list))
     (`bookmarks      (bookmark-all-names))
     (`projects       (dashboard-projects-backend-load-projects))
     (`ls-directories (dashboard-ls--dirs))
@@ -427,9 +430,11 @@ Optional argument ARGS adviced function arguments."
 (defun dashboard-remove-item-recentf ()
   "Remove a file from `recentf-list'."
   (interactive)
-  (let ((path (save-excursion (end-of-line) (ffap-guesser))))
-    (setq recentf-list (delete path recentf-list)))
-  (dashboard-mute-apply (recentf-save-list)))
+  (let ((path (get-text-property (point) 'dashboard-path)))
+    (when (boundp 'recentf-list)
+      ;; Compiler need that recentf-list is defined.
+      (setq recentf-list (delete path recentf-list)))
+    (dashboard-funcall-fboundp 'recentf-save-list)))
 
 (defun dashboard-remove-item-projects ()
   "Remove a path from `project--list'."
@@ -503,57 +508,53 @@ Optional argument ARGS adviced function arguments."
 (defun dashboard-insert-items ()
   "Function to insert dashboard items.
 See `dashboard-item-generators' for all items available."
-  (let ((recentf-is-on (recentf-enabled-p))
-        (origial-recentf-list recentf-list))
-    (mapc (lambda (els)
-            (let* ((el (or (car-safe els) els))
-                   (list-size
-                    (or (cdr-safe els)
-                        dashboard-items-default-length))
-                   (item-generator
-                    (cdr-safe (assoc el dashboard-item-generators))))
+  (mapc (lambda (els)
+          (let* ((el (or (car-safe els) els))
+                 (list-size
+                  (or (cdr-safe els)
+                      dashboard-items-default-length))
+                 (item-generator
+                  (cdr-safe (assoc el dashboard-item-generators))))
 
-              (insert "\n")
-              (push (point) dashboard--section-starts)
-              (funcall item-generator list-size)
-              (goto-char (point-max))
+            (insert "\n")
+            (push (point) dashboard--section-starts)
+            (funcall item-generator list-size)
+            (goto-char (point-max))))
+        dashboard-items)
 
-              (when recentf-is-on
-                (setq recentf-list origial-recentf-list))))
-          dashboard-items)
+  (when dashboard-center-content
+    (dashboard-center-text
+     (if dashboard--section-starts
+         (car (last dashboard--section-starts))
+       (point))
+     (point-max)))
 
-    (when dashboard-center-content
-      (dashboard-center-text
-       (if dashboard--section-starts
-           (car (last dashboard--section-starts))
-         (point))
-       (point-max)))
+  (save-excursion
+    (dolist (start dashboard--section-starts)
+      (goto-char start)
+      (insert dashboard-page-separator)))
 
-    (save-excursion
-      (dolist (start dashboard--section-starts)
-        (goto-char start)
-        (insert dashboard-page-separator)))
-
-    (insert "\n")
-    (insert dashboard-page-separator)))
+  (insert "\n")
+  (insert dashboard-page-separator))
 
 (defun dashboard-insert-startupify-lists (&optional force-refresh)
   "Insert the list of widgets into the buffer, FORCE-REFRESH is optional."
   (interactive)
   (let ((inhibit-redisplay t)
-        (recentf-is-on (or (recentf-enabled-p)
-                           (and (assq 'recents dashboard-items)
-                                (dashboard-mute-apply (recentf-mode 1)))))
-        (origial-recentf-list recentf-list)
-        (dashboard-num-recents (or (cdr (assoc 'recents dashboard-items)) 0)))
+        (recentf-is-on (or (dashboard-funcall-fboundp 'recentf-enable-p)
+                           (assq 'recents dashboard-items))))
     (when recentf-is-on
-      (setq recentf-list (dashboard-subseq recentf-list dashboard-num-recents)))
+      (unless (dashboard-funcall-fboundp 'recentf-enable-p)
+        (unless (fboundp 'recentf-mode) (require 'recentf))
+        (recentf-mode 1)
+        (when dashboard-remove-missing-entry
+          (dashboard-funcall-fboundp 'recentf-cleanup)))
+      (setq dashboard-recentf-list (symbol-value 'recentf-list)))
     (dashboard--with-buffer
       (when (or force-refresh (not (eq major-mode 'dashboard-mode)))
         (run-hooks 'dashboard-before-initialize-hook)
         (erase-buffer)
         (setq dashboard--section-starts nil)
-
         (mapc (lambda (entry)
                 (if (and (listp entry)
                          (not (functionp entry)))
@@ -563,7 +564,10 @@ See `dashboard-item-generators' for all items available."
         (dashboard-vertically-center)
         (dashboard-mode)))
     (when recentf-is-on
-      (setq recentf-list origial-recentf-list))))
+      (when (boundp 'recentf-list)
+        ;; Compiler need to esure recentf-list is defined.
+        (setq recentf-list dashboard-recentf-list))
+      (setq dashboard-recentf-list nil))))
 
 (defun dashboard-vertically-center ()
   "Center vertically the content of dashboard.  Always go to point-min char."
