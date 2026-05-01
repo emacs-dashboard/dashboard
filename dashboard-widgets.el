@@ -693,7 +693,10 @@ in `dashboard-mode-map'."
               (dashboard-cycle-section-forward section))
   (define-key dashboard-mode-map
               (kbd (upcase keybinding))
-              (dashboard-cycle-section-backward section)))
+              (dashboard-cycle-section-backward section))
+  ;; This nil is because some how, in emacs 28,
+  ;; dashboard-cycle-section-backward is called and widget-backward failed.
+  nil)
 
 (defun dashboard-append (msg &optional _messagebuf)
   "Append MSG to dashboard buffer.
