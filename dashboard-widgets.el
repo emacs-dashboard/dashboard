@@ -683,8 +683,7 @@ This code is dynamically generated in `dashboard-insert-shortcut'.")
           (search-backward ,search-label (point-min) t))
         ,@(unless no-next-line '((forward-line 1)))
         (back-to-indentation))
-       (eval-after-load 'dashboard
-         (dashboard--define-shorcut-key-binding ,shortcut-id ,shortcut-char)))))
+       (dashboard--define-shorcut-key-binding ,shortcut-id ,shortcut-char))))
 
 (defun dashboard--define-shorcut-key-binding (section keybinding)
   "Set `cycle-section's function for SECTION to KEYBINDING.
@@ -693,10 +692,7 @@ in `dashboard-mode-map'."
               (dashboard-cycle-section-forward section))
   (define-key dashboard-mode-map
               (kbd (upcase keybinding))
-              (dashboard-cycle-section-backward section))
-  ;; This nil is because some how, in emacs 28,
-  ;; dashboard-cycle-section-backward is called and widget-backward failed.
-  nil)
+              (dashboard-cycle-section-backward section)))
 
 (defun dashboard-append (msg &optional _messagebuf)
   "Append MSG to dashboard buffer.
